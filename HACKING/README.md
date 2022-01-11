@@ -1,6 +1,6 @@
 # Contributing to this project
 
-First of all, thanks! Second of all, this is pretty much just a stub right now, but here's how you use the Dockerfile.
+First of all, thanks! Second of all, this is pretty much just a stub right now, but here's how you use the Dockerfile. Note that this is only for development.
 
 ## Dockerfile
 If you need to install podman, check the [podman documentation](https://podman.io/getting-started/installation.html).
