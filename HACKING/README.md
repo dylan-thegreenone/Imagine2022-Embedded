@@ -14,13 +14,13 @@ podman build . --tag esp-idf
 Then, start the container. You might find it convenient to clone this repo outside of the container and mount it inside. Do so using the '-v' flag. For example...
 
 ```
-podman run -dit -v /home/wilnil/imagine2022-esp-idf:/mnt/imagine2022-esp-idf --device=/dev/ttyUSB0:/dev/ttyUSB0:rwm --group-add keep-groups --annotation io.crun.keep_original_groups=1  esp-idf
+podman run -dit --name imagine-embedded-dev -v /home/wilnil/imagine2022-esp-idf:/mnt/imagine2022-esp-idf --device=/dev/ttyUSB0:/dev/ttyUSB0:rwm --group-add keep-groups --annotation io.crun.keep_original_groups=1  esp-idf
 ```
 
 Then you can attach a shell to the pod
 
 `
-podman exec -it <pod_id> bash
+podman exec -it imagine-embedded-dev bash
 `
 
 Once you're inside, use these commands to run the demo:
