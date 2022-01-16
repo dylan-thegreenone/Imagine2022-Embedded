@@ -122,7 +122,7 @@ static void update_device_info(esp_bt_gap_cb_param_t *param)
     int32_t rssi = -129; /* invalid value */
     esp_bt_gap_dev_prop_t *p;
 
-    //ESP_LOGI(GAP_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18));
+    ESP_LOGI(GAP_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
     for (int i = 0; i < param->disc_res.num_prop; i++) {
         p = param->disc_res.prop + i;
         switch (p->type) {
