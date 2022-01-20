@@ -13,7 +13,7 @@ First, you need to get the container. You can either build the container with `p
 Then, start the container. You might find it convenient to clone this repo outside of the container and mount it inside, so that you have persistent access. Do so using the '-v' flag. For example...
 
 ```
-podman run -dit --name imagine-embedded-dev -v <cloned repo location>:/mnt/imagine2022-esp-idf:Z --group-add keep-groups --annotation io.crun.keep_original_groups=1 --device=/dev/ttyUSB0:/dev/ttyUSB0:rwm imaginerit-embedded-dev
+podman run -dit --name imagine-embedded-dev -v <cloned repo location>:/mnt/ImagineRIT2022:Z --annotation io.crun.keep_original_groups=1 --device=/dev/ttyUSB0:/dev/ttyUSB0:rwm imaginerit-embedded-dev
 ```
 
 You may have to add `--security-opt label=disable` if you are unable to access your embedded device.
@@ -24,10 +24,12 @@ Then you can attach a shell to the pod
 podman exec -it imagine-embedded-dev bash
 `
 
+You can also use the included `launch-environment.sh` shell script.
+
 Once you're inside, use these commands to run the demo:
 
 ```
-cd /mnt/imagine2022-esp-idf
+cd /mnt/ImagineRIT2022/imagine2022-esp-idf
 idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
