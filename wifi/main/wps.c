@@ -49,6 +49,7 @@
 static const char *TAG = "example_wps";
 static esp_wps_config_t config = WPS_CONFIG_INIT_DEFAULT(WPS_MODE);
 static wifi_config_t wps_ap_creds[MAX_WPS_AP_CRED];
+static wifi_config_t wps_ap_creds_imagine[MAX_WPS_AP_CRED];
 static int s_ap_creds_num = 0;
 static int s_retry_num = 0;
 
@@ -88,7 +89,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                     (wifi_event_sta_wps_er_success_t *)event_data;
                 int i;
 
-                if (evt) {
+                /*if (evt) {
                     s_ap_creds_num = evt->ap_cred_cnt;
                     for (i = 0; i < s_ap_creds_num; i++) {
                         memcpy(wps_ap_creds[i].sta.ssid, evt->ap_cred[i].ssid,
@@ -96,18 +97,18 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                         memcpy(wps_ap_creds[i].sta.password, evt->ap_cred[i].passphrase,
                                sizeof(evt->ap_cred[i].passphrase));
                     }
-                    /* If multiple AP credentials are received from WPS, connect with first one */
+                    // If multiple AP credentials are received from WPS, connect with first one
                     ESP_LOGI(TAG, "Connecting to SSID: %s, Passphrase: %s",
                              wps_ap_creds[0].sta.ssid, wps_ap_creds[0].sta.password);
                     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wps_ap_creds[0]) );
-                }
+                }*/
                 /*
                  * If only one AP credential is received from WPS, there will be no event data and
                  * esp_wifi_set_config() is already called by WPS modules for backward compatibility
                  * with legacy apps. So directly attempt connection here.
                  */
-                ESP_ERROR_CHECK(esp_wifi_wps_disable());
-                esp_wifi_connect();
+//                ESP_ERROR_CHECK(esp_wifi_wps_disable());
+//                esp_wifi_connect();
             }
             break;
         case WIFI_EVENT_STA_WPS_ER_FAILED:
@@ -156,11 +157,20 @@ static void start_wps(void)
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
+    memcpy(wps_ap_creds_imagine[0].sta.ssid, "willardtest",
+       sizeof("willardtest"));
+    memcpy(wps_ap_creds_imagine[0].sta.password, "tits12345",
+       sizeof("tits12345"));
 
-    ESP_LOGI(TAG, "start wps...");
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wps_ap_creds_imagine[0]) );
+    ESP_ERROR_CHECK(esp_wifi_wps_disable());
+    esp_wifi_connect();
 
-    ESP_ERROR_CHECK(esp_wifi_wps_enable(&config));
-    ESP_ERROR_CHECK(esp_wifi_wps_start(0));
+
+    //ESP_LOGI(TAG, "start wps...");
+
+    //ESP_ERROR_CHECK(esp_wifi_wps_enable(&config));
+    //ESP_ERROR_CHECK(esp_wifi_wps_start(0));
 }
 
 void app_main(void)
