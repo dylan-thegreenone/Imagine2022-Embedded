@@ -73,17 +73,17 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     int32_t rssi = -129; /* invalid value */
     esp_bt_gap_dev_prop_t *p;
 
-    ESP_LOGI(GAP_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
+    ESP_LOGI(CSHA_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
     for (int i = 0; i < param->disc_res.num_prop; i++) {
         p = param->disc_res.prop + i;
         switch (p->type) {
         case ESP_BT_GAP_DEV_PROP_COD:
             cod = *(uint32_t *)(p->val);
-            //ESP_LOGI(GAP_TAG, "--Class of Device: 0x%x", cod);
+            //ESP_LOGI(CSHA_TAG, "--Class of Device: 0x%x", cod);
             break;
         case ESP_BT_GAP_DEV_PROP_RSSI:
             rssi = *(int8_t *)(p->val);
-            //ESP_LOGI(GAP_TAG, "--RSSI: %d", rssi);
+            //ESP_LOGI(CSHA_TAG, "--RSSI: %d", rssi);
             break;
         case ESP_BT_GAP_DEV_PROP_BDNAME:
         default:
@@ -134,11 +134,11 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
 
     //if (p_dev->eir && p_dev->bdname_len == 0) {
         get_name_from_eir(p_dev->eir, p_dev->bdname, &p_dev->bdname_len);
-        ESP_LOGI(GAP_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
+        ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
 
         //p_dev->state = APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE;
         // We never wanna stop
-//        ESP_LOGI(GAP_TAG, "Cancel device discovery ...");
+//        ESP_LOGI(CSHA_TAG, "Cancel device discovery ...");
 //       esp_bt_gap_cancel_discovery();
     //}
 }
@@ -165,16 +165,16 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
     }
     case ESP_BT_GAP_DISC_STATE_CHANGED_EVT: {
         if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STOPPED) {
-            ESP_LOGI(GAP_TAG, "Device discovery stopped.");
+            ESP_LOGI(CSHA_TAG, "Device discovery stopped.");
             //if ( (p_dev->state == APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE ||
             //        p_dev->state == APP_GAP_STATE_DEVICE_DISCOVERING)
             //        && p_dev->dev_found) {
             //    p_dev->state = APP_GAP_STATE_SERVICE_DISCOVERING;
-            //    ESP_LOGI(GAP_TAG, "Discover services ...");
+            //    ESP_LOGI(CSHA_TAG, "Discover services ...");
             //    esp_bt_gap_get_remote_services(p_dev->bda);
             //}
         } else if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STARTED) {
-            ESP_LOGI(GAP_TAG, "Discovery started.");
+            ESP_LOGI(CSHA_TAG, "Discovery started.");
         }
         break;
     }
@@ -183,21 +183,21 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
                 p_dev->state == APP_GAP_STATE_SERVICE_DISCOVERING) {
             p_dev->state = APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE;
             if (param->rmt_srvcs.stat == ESP_BT_STATUS_SUCCESS) {
-                ESP_LOGI(GAP_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
+                ESP_LOGI(CSHA_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
                 for (int i = 0; i < param->rmt_srvcs.num_uuids; i++) {
                     esp_bt_uuid_t *u = param->rmt_srvcs.uuid_list + i;
-                    ESP_LOGI(GAP_TAG, "--%s", uuid2str(u, uuid_str, 37));
-                    // ESP_LOGI(GAP_TAG, "--%d", u->len);
+                    ESP_LOGI(CSHA_TAG, "--%s", uuid2str(u, uuid_str, 37));
+                    // ESP_LOGI(CSHA_TAG, "--%d", u->len);
                 }
             } else {
-                ESP_LOGI(GAP_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
+                ESP_LOGI(CSHA_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
             }
         }
         break;
     }
     case ESP_BT_GAP_RMT_SRVC_REC_EVT:
     default: {
-        ESP_LOGI(GAP_TAG, "event: %d", event);
+        ESP_LOGI(CSHA_TAG, "event: %d", event);
         break;
     }
     }
@@ -219,7 +219,7 @@ void bt_app_gap_start_up(void)
     /* inititialize device information and status */
     bt_app_gap_init();
 
-    ESP_LOGI("LIGMA", "Begin inquiry");
+    ESP_LOGI(CSHA_TAG, "Begin inquiry");
         esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
     vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
