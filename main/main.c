@@ -7,6 +7,7 @@
 #include "esp_log.h"
 
 #include "bluetooth.h"
+#include "wifi.h"
 
 void app_main(void)
 {
@@ -17,6 +18,8 @@ void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK( ret );
+
+    start_wifi();
 
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
 
