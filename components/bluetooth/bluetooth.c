@@ -1,55 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2021 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Unlicense OR CC0-1.0
- */
+#include "bluetooth.h"
 
-
-
-/****************************************************************************
-*
-* This file is for Classic Bluetooth device and service discovery Demo.
-*
-****************************************************************************/
-
-#include <stdint.h>
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "nvs.h"
-#include "nvs_flash.h"
-#include "esp_system.h"
-#include "esp_log.h"
-#include "esp_bt.h"
-#include "esp_bt_main.h"
-#include "esp_bt_device.h"
-#include "esp_gap_bt_api.h"
-
-#define GAP_TAG          "GAP"
-
-typedef enum {
-    APP_GAP_STATE_IDLE = 0,
-    APP_GAP_STATE_DEVICE_DISCOVERING,
-    APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE,
-    APP_GAP_STATE_SERVICE_DISCOVERING,
-    APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE,
-} app_gap_state_t;
-
-typedef struct {
-    bool dev_found;
-    uint8_t bdname_len;
-    uint8_t eir_len;
-    uint8_t rssi;
-    uint32_t cod;
-    uint8_t eir[ESP_BT_GAP_EIR_DATA_LEN];
-    uint8_t bdname[ESP_BT_GAP_MAX_BDNAME_LEN + 1];
-    esp_bd_addr_t bda;
-    app_gap_state_t state;
-} app_gap_cb_t;
-
-static app_gap_cb_t m_dev_info;
-
-static char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
+char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
 {
     if (bda == NULL || str == NULL || size < 18) {
         return NULL;
@@ -61,7 +12,7 @@ static char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
     return str;
 }
 
-static char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size)
+char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size)
 {
     if (uuid == NULL || str == NULL) {
         return NULL;
@@ -83,7 +34,7 @@ static char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size)
     return str;
 }
 
-static bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len)
+bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len)
 {
     uint8_t *rmt_bdname = NULL;
     uint8_t rmt_bdname_len = 0;
@@ -115,7 +66,7 @@ static bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len
     return false;
 }
 
-static void update_device_info(esp_bt_gap_cb_param_t *param)
+void update_device_info(esp_bt_gap_cb_param_t *param)
 {
     char bda_str[18];
     uint32_t cod = 0;
@@ -192,7 +143,7 @@ static void update_device_info(esp_bt_gap_cb_param_t *param)
     //}
 }
 
-static void bt_app_gap_init(void)
+void bt_app_gap_init(void)
 {
     app_gap_cb_t *p_dev = &m_dev_info;
     memset(p_dev, 0, sizeof(app_gap_cb_t));
@@ -201,7 +152,7 @@ static void bt_app_gap_init(void)
     p_dev->state = APP_GAP_STATE_DEVICE_DISCOVERING;
 }
 
-static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
+void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 {
     app_gap_cb_t *p_dev = &m_dev_info;
     char bda_str[18];
@@ -253,7 +204,7 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
     return;
 }
 
-static void bt_app_gap_start_up(void)
+void bt_app_gap_start_up(void)
 {
     while (true) {
     char *dev_name = "ESP_GAP_INQRUIY";
@@ -274,39 +225,3 @@ static void bt_app_gap_start_up(void)
     }
 }
 
-void app_main(void)
-{
-    /* Initialize NVS — it is used to store PHY calibration data */
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK( ret );
-
-    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
-
-    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
-        ESP_LOGE(GAP_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) {
-        ESP_LOGE(GAP_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_bluedroid_init()) != ESP_OK) {
-        ESP_LOGE(GAP_TAG, "%s initialize bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_bluedroid_enable()) != ESP_OK) {
-        ESP_LOGE(GAP_TAG, "%s enable bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
-        return;
-    }
-
-    bt_app_gap_start_up();
-    ESP_LOGI("LIGMA", "Done!");
-}
