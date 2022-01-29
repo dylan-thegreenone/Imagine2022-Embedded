@@ -8,7 +8,7 @@ int send_str(int sock, struct sockaddr_in* destaddr, char* msg_str, int block_si
     {
         if (i - last_end >= block_size || i == len - 1)
         {
-            sendto(sock, &msg_str[last_end],  i-last_end, 0, (const struct sockaddr *)destaddr, sizeof(*destaddr));
+            sendto(sock, &msg_str[last_end],  i-last_end + (i == len - 1 ? 1 : 0), 0, (const struct sockaddr *)destaddr, sizeof(*destaddr));
             last_end = i;
         }
     }
