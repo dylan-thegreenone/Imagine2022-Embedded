@@ -214,7 +214,7 @@ void bt_app_gap_start_up(void)
     esp_bt_gap_register_callback(bt_app_gap_cb);
 
     /* set discoverable and connectable mode, wait to be connected */
-    esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
     /* inititialize device information and status */
     bt_app_gap_init();
