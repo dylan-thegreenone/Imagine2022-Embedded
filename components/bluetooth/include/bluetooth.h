@@ -11,7 +11,7 @@
 #include "esp_bt_device.h"
 #include "esp_gap_bt_api.h"
 
-#define GAP_TAG "CSHA Bluetooth"
+#define CSHA_TAG "CSHA Bluetooth"
 
 typedef enum {
     APP_GAP_STATE_IDLE = 0,
