@@ -73,17 +73,17 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     int32_t rssi = -129; /* invalid value */
     esp_bt_gap_dev_prop_t *p;
 
-    ESP_LOGI(CSHA_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
+    ESP_LOGI(CSHA_TAG, "Device ------------------ %s", bda2str(param->disc_res.bda, bda_str, 18));
     for (int i = 0; i < param->disc_res.num_prop; i++) {
         p = param->disc_res.prop + i;
         switch (p->type) {
-        case ESP_BT_GAP_DEV_PROP_COD:
+        case ESP_BT_GAP_DEV_PROP_COD: // I don't care about Class of Device right now.
             cod = *(uint32_t *)(p->val);
-            //ESP_LOGI(CSHA_TAG, "--Class of Device: 0x%x", cod);
+            ESP_LOGI(CSHA_TAG, "--Class of Device: 0x%x", cod);
             break;
         case ESP_BT_GAP_DEV_PROP_RSSI:
             rssi = *(int8_t *)(p->val);
-            //ESP_LOGI(CSHA_TAG, "--RSSI: %d", rssi);
+            ESP_LOGI(CSHA_TAG, "--RSSI: %d", rssi);
             break;
         case ESP_BT_GAP_DEV_PROP_BDNAME:
         default:
@@ -91,8 +91,10 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
         }
     }
 
-    /* search for device with MAJOR service class as "rendering" in COD */
+    // Right now, I want to get ALL devices, so I've commented this out.
     app_gap_cb_t *p_dev = &m_dev_info;
+    /*
+    // search for device with MAJOR service class as "rendering" in COD
     //if (p_dev->dev_found && 0 != memcmp(param->disc_res.bda, p_dev->bda, ESP_BD_ADDR_LEN)) {
     //    return;
     //}
@@ -102,6 +104,7 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     //         !(esp_bt_gap_get_cod_major_dev(cod) == ESP_BT_COD_MAJOR_DEV_AV))) {
     //    return;
     //}
+    */
 
     memcpy(p_dev->bda, param->disc_res.bda, ESP_BD_ADDR_LEN);
     p_dev->dev_found = true;
@@ -132,12 +135,12 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
         }
     }
 
-    //if (p_dev->eir && p_dev->bdname_len == 0) {
+    //if (p_dev->eir && p_dev->bdname_len == 0) { // Fuck this if statement. I think it checks that there _is_ a dev name, and does... something else.
         get_name_from_eir(p_dev->eir, p_dev->bdname, &p_dev->bdname_len);
-        ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
+        ESP_LOGI(CSHA_TAG, "Found a device -> address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
 
-        //p_dev->state = APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE;
         // We never wanna stop
+        //p_dev->state = APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE;
 //        ESP_LOGI(CSHA_TAG, "Cancel device discovery ...");
 //       esp_bt_gap_cancel_discovery();
     //}
@@ -214,7 +217,7 @@ void bt_app_gap_start_up(void)
     esp_bt_gap_register_callback(bt_app_gap_cb);
 
     /* set discoverable and connectable mode, wait to be connected */
-    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+    esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
     /* inititialize device information and status */
     bt_app_gap_init();
