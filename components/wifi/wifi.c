@@ -1,4 +1,5 @@
 #include "wifi.h"
+#include <stdint.h>
 
 #define MAX_RETRY_ATTEMPTS     2
 
@@ -74,3 +75,16 @@ void start_wifi(void)
     esp_wifi_connect(); // Use the creds to connect to WiFi
 }
 
+char* byte_mac_to_str(char* str, uint8_t* mac)
+{
+    //17 char long
+    sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+    return str;
+}
+
+char* get_mac_str(char* str)
+{
+    uint8_t* mac;
+    esp_efuse_mac_get_default(mac);
+    return byte_mac_to_str(str, mac);
+}
