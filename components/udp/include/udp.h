@@ -1,14 +1,24 @@
-#ifndef UDP
-#define UDP
+#ifndef _UDP_H_
+#define _UDP_H_
 
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
 
-int send_str(int sock, struct sockaddr_in* destaddr, char* msg_str, int block_size);
-struct sockaddr_in* construct_sockaddr_info(struct sockaddr_in* destaddr, char* addr, int port, int af);
+
+static struct sockaddr_in active_dest;
+static int sockfd = -1;
+
+int send_str(char* msg_str, int block_size);
+
+/**
+ * !!! MUST BE CALLED ONCE BEFORE ATTEMPTING TO SEND OVER UDP !!!
+ * returns true on success
+ */
+bool init_udp_socket(char* dest_addr, int dest_port);
 int default_af();
 int get_sockfd();
+bool socket_ready();
 
 #endif

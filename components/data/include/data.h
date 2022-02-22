@@ -1,6 +1,8 @@
 #ifndef DATA
 #define DATA
 
+#include <string.h>
+#include <math.h>
 
 #define SEPARATOR "|"
 

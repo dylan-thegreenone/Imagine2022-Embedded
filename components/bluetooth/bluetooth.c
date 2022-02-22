@@ -1,5 +1,7 @@
 #include "bluetooth.h"
 
+char wifi_mac_str[17];
+
 char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
 {
     if (bda == NULL || str == NULL || size < 18) {
@@ -133,12 +135,7 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     }
 
     //if (p_dev->eir && p_dev->bdname_len == 0) {
-        get_name_from_eir(p_dev->eir, p_dev->bdname, &p_dev->bdname_len);
-        ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
-
-        //p_dev->state = APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE;
-        // We never wanna stop
-//        ESP_LOGI(CSHA_TAG, "Cancel device discovery ...");
+        get_name_from_eir(p_dev->eir, p_dev->bdname, &p_dev->bdname_len); ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi); //p_dev->state = APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE; // We never wanna stop //        ESP_LOGI(CSHA_TAG, "Cancel device discovery ...");
 //       esp_bt_gap_cancel_discovery();
     //}
 }
@@ -206,22 +203,23 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 
 void bt_app_gap_start_up(void)
 {
+    get_mac_str(wifi_mac_str);
     while (true) {
-    char *dev_name = "ESP_GAP_INQRUIY";
-    esp_bt_dev_set_device_name(dev_name);
-
-    /* register GAP callback function */
-    esp_bt_gap_register_callback(bt_app_gap_cb);
-
-    /* set discoverable and connectable mode, wait to be connected */
-    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-
-    /* inititialize device information and status */
-    bt_app_gap_init();
-
-    ESP_LOGI(CSHA_TAG, "Begin inquiry");
-        esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
-    vTaskDelay(15000 / portTICK_PERIOD_MS);
+	char *dev_name = "ESP_GAP_INQRUIY";
+	esp_bt_dev_set_device_name(dev_name);
+	
+	/* register GAP callback function */
+	esp_bt_gap_register_callback(bt_app_gap_cb);
+	
+	/* set discoverable and connectable mode, wait to be connected */
+	esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+	
+	/* inititialize device information and status */
+	bt_app_gap_init();
+	
+	ESP_LOGI(CSHA_TAG, "Begin inquiry");
+	esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+	vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
 }
 

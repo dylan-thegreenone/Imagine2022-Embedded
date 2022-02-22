@@ -84,7 +84,7 @@ char* byte_mac_to_str(char* str, uint8_t* mac)
 
 char* get_mac_str(char* str)
 {
-    uint8_t* mac;
+    uint8_t mac[6];
     esp_efuse_mac_get_default(mac);
     return byte_mac_to_str(str, mac);
 }

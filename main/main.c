@@ -7,7 +7,9 @@
 #include "esp_log.h"
 
 #include "bluetooth.h"
+#include "udp.h"
 #include "wifi.h"
+#include "socketConfig.h"
 
 void app_main(void)
 {
@@ -20,6 +22,7 @@ void app_main(void)
     ESP_ERROR_CHECK( ret );
 
     start_wifi();
+    init_udp_socket(DESTINATION_ADDRESS, DESTINATION_PORT);
 
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
 
@@ -43,6 +46,12 @@ void app_main(void)
         ESP_LOGE(CSHA_TAG, "%s enable bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
+    if (!socket_ready())
+    {
+	ESP_LOGE(CSHA_TAG, "Could not start UDP socket");
+    }
+    else ESP_LOGE(CSHA_TAG, "UDP socket OPENED!!!");
+
 
     bt_app_gap_start_up();
     ESP_LOGI("LIGMA", "Done!");
