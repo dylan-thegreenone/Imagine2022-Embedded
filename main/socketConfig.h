@@ -1,0 +1,7 @@
+#ifndef _SOCKETCONFIG_H_
+#define _SOCKETCONFIG_H_
+
+#define DESTINATION_ADDRESS "129.21.131.22"
+#define DESTINATION_PORT 6666
+
+#endif
