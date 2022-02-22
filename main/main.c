@@ -50,7 +50,6 @@ void app_main(void)
     {
 	ESP_LOGE(CSHA_TAG, "Could not start UDP socket");
     }
-    else ESP_LOGE(CSHA_TAG, "UDP socket OPENED!!!");
 
 
     bt_app_gap_start_up();

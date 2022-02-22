@@ -10,16 +10,10 @@
 * represents detection data of bluetooth device
 */
 typedef struct {
-    char* name;
-    char* mac;
+    char name[100];
+    char mac[18];
     int rssi;
 } csha_bt_packet;
-
-/*
-* a simple malloc helper function 
-* allocates memory for new detection packet and returns pointer to it
-*/
-csha_bt_packet* new_frame();
 
 /*
 * returns the length minimum length of a string that can hold the data formatted to send
