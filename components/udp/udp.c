@@ -1,7 +1,7 @@
 #include "udp.h"
 
 
-int send_str(char* msg_str, int block_size)
+int udp_send_str(char* msg_str, int block_size)
 {
     int last_end = 0;
     int len = strlen(msg_str);

@@ -6,11 +6,13 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+// maximum safe bytes per block for udp packets
+#define MAX_SAFE_BLOCK_SIZE 508
 
 static struct sockaddr_in active_dest;
 static int sockfd = -1;
 
-int send_str(char* msg_str, int block_size);
+int udp_send_str(char* msg_str, int block_size);
 
 /**
  * !!! MUST BE CALLED ONCE BEFORE ATTEMPTING TO SEND OVER UDP !!!
