@@ -1,7 +1,5 @@
 #include "bluetooth.h"
 
-char wifi_mac_str[17];
-
 
 char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
 {
@@ -168,54 +166,53 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
     char uuid_str[37];
 
     switch (event) {
-    case ESP_BT_GAP_DISC_RES_EVT: {
-        update_device_info(param);
-        break;
-    }
-    case ESP_BT_GAP_DISC_STATE_CHANGED_EVT: {
-        if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STOPPED) {
-            ESP_LOGI(CSHA_TAG, "Device discovery stopped.");
-            //if ( (p_dev->state == APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE ||
-            //        p_dev->state == APP_GAP_STATE_DEVICE_DISCOVERING)
-            //        && p_dev->dev_found) {
-            //    p_dev->state = APP_GAP_STATE_SERVICE_DISCOVERING;
-            //    ESP_LOGI(CSHA_TAG, "Discover services ...");
-            //    esp_bt_gap_get_remote_services(p_dev->bda);
-            //}
-        } else if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STARTED) {
-            ESP_LOGI(CSHA_TAG, "Discovery started.");
+        case ESP_BT_GAP_DISC_RES_EVT: {
+            update_device_info(param);
+            break;
         }
-        break;
-    }
-    case ESP_BT_GAP_RMT_SRVCS_EVT: {
-        if (memcmp(param->rmt_srvcs.bda, p_dev->bda, ESP_BD_ADDR_LEN) == 0 &&
-                p_dev->state == APP_GAP_STATE_SERVICE_DISCOVERING) {
-            p_dev->state = APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE;
-            if (param->rmt_srvcs.stat == ESP_BT_STATUS_SUCCESS) {
-                ESP_LOGI(CSHA_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
-                for (int i = 0; i < param->rmt_srvcs.num_uuids; i++) {
-                    esp_bt_uuid_t *u = param->rmt_srvcs.uuid_list + i;
-                    ESP_LOGI(CSHA_TAG, "--%s", uuid2str(u, uuid_str, 37));
-                    // ESP_LOGI(CSHA_TAG, "--%d", u->len);
-                }
-            } else {
-                ESP_LOGI(CSHA_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
+        case ESP_BT_GAP_DISC_STATE_CHANGED_EVT: {
+            if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STOPPED) {
+                ESP_LOGI(CSHA_TAG, "Device discovery stopped.");
+                //if ( (p_dev->state == APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE ||
+                //        p_dev->state == APP_GAP_STATE_DEVICE_DISCOVERING)
+                //        && p_dev->dev_found) {
+                //    p_dev->state = APP_GAP_STATE_SERVICE_DISCOVERING;
+                //    ESP_LOGI(CSHA_TAG, "Discover services ...");
+                //    esp_bt_gap_get_remote_services(p_dev->bda);
+                //}
+            } else if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STARTED) {
+                ESP_LOGI(CSHA_TAG, "Discovery started.");
             }
+            break;
         }
-        break;
-    }
-    case ESP_BT_GAP_RMT_SRVC_REC_EVT:
-    default: {
-        ESP_LOGI(CSHA_TAG, "event: %d", event);
-        break;
-    }
+        case ESP_BT_GAP_RMT_SRVCS_EVT: {
+            if (memcmp(param->rmt_srvcs.bda, p_dev->bda, ESP_BD_ADDR_LEN) == 0 &&
+                    p_dev->state == APP_GAP_STATE_SERVICE_DISCOVERING) {
+                p_dev->state = APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE;
+                if (param->rmt_srvcs.stat == ESP_BT_STATUS_SUCCESS) {
+                    ESP_LOGI(CSHA_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
+                    for (int i = 0; i < param->rmt_srvcs.num_uuids; i++) {
+                        esp_bt_uuid_t *u = param->rmt_srvcs.uuid_list + i;
+                        ESP_LOGI(CSHA_TAG, "--%s", uuid2str(u, uuid_str, 37));
+                        // ESP_LOGI(CSHA_TAG, "--%d", u->len);
+                    }
+                } else {
+                    ESP_LOGI(CSHA_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
+                }
+            }
+            break;
+        }
+        case ESP_BT_GAP_RMT_SRVC_REC_EVT:
+        default: {
+            ESP_LOGI(CSHA_TAG, "event: %d", event);
+            break;
+        }
     }
     return;
 }
 
 void bt_app_gap_start_up(void)
 {
-    get_mac_str(wifi_mac_str);
     while (true) {
 	    char *dev_name = "ESP_GAP_INQRUIY";
 	    esp_bt_dev_set_device_name(dev_name);

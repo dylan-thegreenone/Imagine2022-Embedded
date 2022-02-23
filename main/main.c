@@ -48,11 +48,15 @@ void app_main(void)
     }
     if (!socket_ready())
     {
-	ESP_LOGE(CSHA_TAG, "Could not start UDP socket");
+	    ESP_LOGE(CSHA_TAG, "Could not start UDP socket");
     }
+
+    get_mac_str(wifi_mac_str);
+    ESP_LOGI("WIFI"," mac: %s",  wifi_mac_str);
 
 
     bt_app_gap_start_up();
     ESP_LOGI("LIGMA", "Done!");
     ESP_LOGI("LIGMA", "Done!");
 }
+
