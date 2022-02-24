@@ -1,6 +1,9 @@
 #include "udp.h"
 
 
+static struct sockaddr_in active_dest;
+static int sockfd = -1;
+
 int udp_send_str(char* msg_str, int block_size)
 {
     int last_end = 0;
