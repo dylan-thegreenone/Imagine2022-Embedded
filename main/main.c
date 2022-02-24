@@ -21,7 +21,9 @@ void app_main(void)
     }
     ESP_ERROR_CHECK( ret );
 
-    start_wifi();
+    char* wifi_ssid = WIFI_SSID;
+    char* wifi_pass = WIFI_PASS;
+    start_wifi(wifi_ssid, wifi_pass);
     init_udp_socket(DESTINATION_ADDRESS, DESTINATION_PORT);
 
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
@@ -52,7 +54,7 @@ void app_main(void)
     }
 
     get_mac_str(wifi_mac_str);
-    ESP_LOGI("CSHA WIFI"," mac: %s",  wifi_mac_str);
+    ESP_LOGI(WIFI_TAG," mac: %s",  wifi_mac_str);
 
 
     bt_app_gap_start_up();
