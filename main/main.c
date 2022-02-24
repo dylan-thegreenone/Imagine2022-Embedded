@@ -9,7 +9,7 @@
 #include "bluetooth.h"
 #include "udp.h"
 #include "wifi.h"
-#include "socketConfig.h"
+#include "config.h"
 
 void app_main(void)
 {
@@ -52,7 +52,7 @@ void app_main(void)
     }
 
     get_mac_str(wifi_mac_str);
-    ESP_LOGI("WIFI"," mac: %s",  wifi_mac_str);
+    ESP_LOGI("CSHA WIFI"," mac: %s",  wifi_mac_str);
 
 
     bt_app_gap_start_up();
