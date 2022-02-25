@@ -6,8 +6,8 @@
 static wifi_config_t wps_ap_creds[MAX_WPS_AP_CRED];
 static int s_ap_creds_num = 0;
 static int s_retry_num = 0;
-static char* ssid = "willardtest";
-static char* pass = "tits12345"; // tits12345
+// static char* ssid = "willardtest";
+// static char* pass = "tits12345"; // tits12345
 
 void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
@@ -66,9 +66,9 @@ void start_wifi(char* wifi_ssid, char* wifi_pass)
     ESP_ERROR_CHECK(esp_wifi_start());
 
     memcpy(wps_ap_creds[0].sta.ssid, wifi_ssid,
-       strlen(ssid));
+       strlen(wifi_ssid));
     memcpy(wps_ap_creds[0].sta.password, wifi_pass,
-       strlen(pass));
+       strlen(wifi_pass));
 
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wps_ap_creds[0]) );
     esp_wifi_connect(); // Use the creds to connect to WiFi

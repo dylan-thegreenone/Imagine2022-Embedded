@@ -13,10 +13,13 @@
 
 static char wifi_mac_str[17];
 
-void wifi_event_handler(void* arg, esp_event_base_t event_base,
-                                int32_t event_id, void* event_data);
-void got_ip_event_handler(void* arg, esp_event_base_t event_base,
-                             int32_t event_id, void* event_data);
+void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
+
+void got_ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
+
+/*
+* start wifi process and connect to network with given ssid and password
+*/
 void start_wifi(char* wifi_ssid, char* wifi_pass);
 
 /*
