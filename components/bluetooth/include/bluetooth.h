@@ -1,3 +1,6 @@
+#ifndef _BLUETOOTH_H_
+#define _BLUETOOTH_H_
+
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
@@ -52,3 +55,5 @@ void bt_app_gap_init(void);
 void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
 
 void bt_app_gap_start_up(void);
+
+#endif

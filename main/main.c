@@ -26,10 +26,10 @@ void app_main(void)
         char* wifi_pass = WIFI_PASS;
         start_wifi(wifi_ssid, wifi_pass);
         init_udp_socket(DESTINATION_ADDRESS, DESTINATION_PORT);
+        sntp_update_time();
     #endif
     
-
-        ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
+    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) 
@@ -63,6 +63,11 @@ void app_main(void)
     get_wifi_mac_str(wifi_mac_str);
     ESP_LOGI(WIFI_TAG," mac: %s",  wifi_mac_str);
 
+    time_t now = 0;
+
+    time(&now);
+
+    ESP_LOGI(TIME_TAG, "now : %d", (int)now);
 
     bt_app_gap_start_up();
     ESP_LOGI("LIGMA", "Done!");

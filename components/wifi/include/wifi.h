@@ -1,3 +1,6 @@
+#ifndef _WIFI_H_
+#define _WIFI_H_
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
@@ -8,10 +11,17 @@
 #include <string.h>
 #include <stdint.h>
 #include "esp_system.h"
+#include "esp_sntp.h"
+#include <sys/time.h>
 
 #define WIFI_TAG "CSHA Wifi"
+#define TIME_TAG "CSHA NTP"
+#define NTP_SERVER "pool.ntp.org"
+#define SNTP_MAX_RETRY_COUNT 5
 
 static char wifi_mac_str[17];
+static struct tm timeinfo = { 0 };
+static bool sntp_setup = false;
 
 void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
 
@@ -39,3 +49,15 @@ char* byte_mac_to_str(char* str, uint8_t* mac);
 char* get_wifi_mac_str(char* str);
 
 bool wifi_connected(void);
+
+void time_sync_notification_cb(struct timeval* tv);
+
+void init_sntp(void);
+
+/*
+* returns true on success, false on failure
+* probably failed because no wifi or sntp not setup yet
+*/
+bool sntp_update_time(void);
+
+#endif

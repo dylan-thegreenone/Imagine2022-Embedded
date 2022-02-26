@@ -93,3 +93,27 @@ bool wifi_connected(void)
 {
     return connected;
 }
+
+void time_sync_notification_cb(struct timeval* tv)
+{
+    //Nothing yet you fool
+}
+
+void init_sntp(void)
+{
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, NTP_SERVER);
+    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+    sntp_init();
+    sntp_setup = true;
+}
+bool sntp_update_time(void)
+{
+    init_sntp();
+    int retry = 0;
+    for (; retry < SNTP_MAX_RETRY_COUNT && sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET; ++retry)
+    {
+        vTaskDelay(2000/portTICK_PERIOD_MS);
+    }
+    return sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED;
+}

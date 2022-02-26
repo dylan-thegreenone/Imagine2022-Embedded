@@ -126,20 +126,20 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
 
     get_name_from_eir(p_dev->eir, p_dev->bdname, &p_dev->bdname_len); 
 
-    csha_bt_packet packet;
+    csha_bt_packet btpacket;
 
     ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
     
     //copy bda string to bt packet
-    //packet.mac = bda_str;
-    sprintf(packet.mac, "%s", bda_str);
-    sprintf(packet.name, "%s",  p_dev->bdname);
-    packet.rssi = rssi;
+    //btpacket.mac = bda_str;
+    sprintf(btpacket.mac, "%s", bda_str);
+    sprintf(btpacket.name, "%s",  p_dev->bdname);
+    btpacket.rssi = rssi;
 
-    int data_str_len = calc_len(&packet);
+    int data_str_len = calc_len(&btpacket);
     char data_str[data_str_len];
 
-    format_data(data_str, identifier_mac, &packet);
+    format_data(data_str, identifier_mac, &btpacket);
 
     if (wifi_connected())
     {
