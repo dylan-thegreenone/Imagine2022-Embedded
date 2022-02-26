@@ -29,7 +29,7 @@ int calc_len(csha_bt_packet* frame);
 * 
 * returns pointer to str
 */
-char* format_data(char* str, csha_bt_packet* frame);
+char* format_data(char* str, char* sourcemac, csha_bt_packet* frame);
 
 
 

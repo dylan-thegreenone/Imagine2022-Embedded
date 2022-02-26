@@ -7,7 +7,7 @@
 #include <string.h>
 
 // maximum safe bytes per block for udp packets
-#define MAX_SAFE_BLOCK_SIZE 508
+#define MAX_SAFE_UDP_BLOCK_SIZE 508
 
 int udp_send_str(char* msg_str, int block_size);
 

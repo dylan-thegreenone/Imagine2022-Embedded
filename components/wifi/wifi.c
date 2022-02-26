@@ -6,11 +6,10 @@
 static wifi_config_t wps_ap_creds[MAX_WPS_AP_CRED];
 static int s_ap_creds_num = 0;
 static int s_retry_num = 0;
-// static char* ssid = "willardtest";
-// static char* pass = "tits12345"; // tits12345
+static bool connected = false;
 
-void wifi_event_handler(void* arg, esp_event_base_t event_base,
-                                int32_t event_id, void* event_data)
+
+void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
     int ap_idx = 1;
 
@@ -20,6 +19,7 @@ void wifi_event_handler(void* arg, esp_event_base_t event_base,
             break;
         case WIFI_EVENT_STA_DISCONNECTED:
             ESP_LOGI(WIFI_TAG, "WIFI_EVENT_STA_DISCONNECTED");
+            connected = false;
             if (s_retry_num < MAX_RETRY_ATTEMPTS) {
                 esp_wifi_connect();
                 s_retry_num++;
@@ -35,16 +35,17 @@ void wifi_event_handler(void* arg, esp_event_base_t event_base,
                 ESP_LOGI(WIFI_TAG, "Failed to connect!");
             }
             break;
+
         default:
             break;
     }
 }
 
-void got_ip_event_handler(void* arg, esp_event_base_t event_base,
-                             int32_t event_id, void* event_data)
+void got_ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
     ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
     ESP_LOGI(WIFI_TAG, "got ip: " IPSTR, IP2STR(&event->ip_info.ip));
+    connected = true;
 }
 
 /*init wifi as sta and start wps*/
@@ -81,9 +82,38 @@ char* byte_mac_to_str(char* str, uint8_t* mac)
     return str;
 }
 
-char* get_mac_str(char* str)
+char* get_wifi_mac_str(char* str)
 {
     uint8_t mac[6];
     esp_efuse_mac_get_default(mac);
     return byte_mac_to_str(str, mac);
+}
+
+bool wifi_connected(void)
+{
+    return connected;
+}
+
+void time_sync_notification_cb(struct timeval* tv)
+{
+    //Nothing yet you fool
+}
+
+void init_sntp(void)
+{
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, NTP_SERVER);
+    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+    sntp_init();
+    sntp_setup = true;
+}
+bool sntp_update_time(void)
+{
+    init_sntp();
+    int retry = 0;
+    for (; retry < SNTP_MAX_RETRY_COUNT && sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET; ++retry)
+    {
+        vTaskDelay(2000/portTICK_PERIOD_MS);
+    }
+    return sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED;
 }
