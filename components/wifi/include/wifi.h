@@ -31,9 +31,11 @@ void start_wifi(char* wifi_ssid, char* wifi_pass);
 char* byte_mac_to_str(char* str, uint8_t* mac);
 
 /*
-* extracts ESP's default MAC and stores it in str
+* extracts ESP's default wifi MAC and stores it in str
 * str length be at least 17
 * formatted as 00:00:00:00:00:00
 * returns pointer to str
 */
-char* get_mac_str(char* str);
+char* get_wifi_mac_str(char* str);
+
+bool wifi_connected(void);

@@ -1,5 +1,6 @@
 #include "bluetooth.h"
 
+static char identifier_mac[17];
 
 char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
 {
@@ -138,16 +139,13 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     int data_str_len = calc_len(&packet);
     char data_str[data_str_len];
 
-    format_data(data_str, &packet);
+    format_data(data_str, identifier_mac, &packet);
 
-    if (socket_ready())
+    if (wifi_connected())
     {
-        // ESP_LOGI(CSHA_TAG,"sending udp");
-        udp_send_str(data_str, MAX_SAFE_BLOCK_SIZE);
+        udp_send_str(data_str, MAX_SAFE_UDP_BLOCK_SIZE);
     }
-    // ESP_LOGI(CSHA_TAG, "%s -- %d", data_str, data_str_len);
 
-    // ESP_LOGI(CSHA_TAG, "%d -- %d -- %d -- %d", data_str_len, strlen((&packet)->name), strlen((&packet)->mac), packet.rssi);
 }
 
 void bt_app_gap_init(void)
@@ -213,6 +211,7 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 
 void bt_app_gap_start_up(void)
 {
+    get_wifi_mac_str(identifier_mac);
     while (true) {
 	    char *dev_name = "ESP_GAP_INQRUIY";
 	    esp_bt_dev_set_device_name(dev_name);
@@ -231,4 +230,3 @@ void bt_app_gap_start_up(void)
 	    vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
 }
-
