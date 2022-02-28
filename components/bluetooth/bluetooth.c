@@ -135,14 +135,16 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     sprintf(btpacket.mac, "%s", bda_str);
     sprintf(btpacket.name, "%s",  p_dev->bdname);
     btpacket.rssi = rssi;
+    time_t now;
 
     int data_str_len = calc_len(&btpacket);
     char data_str[data_str_len];
 
-    format_data(data_str, identifier_mac, &btpacket);
 
     if (wifi_connected())
     {
+        time(&now);
+        format_data(data_str, now, identifier_mac, &btpacket);
         udp_send_str(data_str, MAX_SAFE_UDP_BLOCK_SIZE);
     }
 
