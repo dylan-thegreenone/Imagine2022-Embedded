@@ -1,7 +1,6 @@
 #include "wifi.h"
 #include <stdint.h>
 
-#define MAX_RETRY_ATTEMPTS     2
 
 static wifi_config_t wps_ap_creds[MAX_WPS_AP_CRED];
 static int s_ap_creds_num = 0;
@@ -20,7 +19,7 @@ void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id
         case WIFI_EVENT_STA_DISCONNECTED:
             ESP_LOGI(WIFI_TAG, "WIFI_EVENT_STA_DISCONNECTED");
             connected = false;
-            if (s_retry_num < MAX_RETRY_ATTEMPTS) {
+            if (s_retry_num < WIFI_MAX_RETRY_ATTEMPTS) {
                 esp_wifi_connect();
                 s_retry_num++;
             } else if (ap_idx < s_ap_creds_num) {

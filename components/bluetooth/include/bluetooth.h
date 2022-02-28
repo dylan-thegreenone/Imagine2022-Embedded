@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <sys/time.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 //#include "nvs.h"
@@ -20,6 +21,9 @@
 
 #define CSHA_TAG "CSHA Bluetooth"
 
+/*
+* possible BLE app states or states 
+*/
 typedef enum {
     APP_GAP_STATE_IDLE = 0,
     APP_GAP_STATE_DEVICE_DISCOVERING,
@@ -28,6 +32,9 @@ typedef enum {
     APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE,
 } app_gap_state_t;
 
+/*
+* all event information passed to BLE app callback 
+*/
 typedef struct {
     bool dev_found;
     uint8_t bdname_len;
@@ -42,18 +49,40 @@ typedef struct {
 
 app_gap_cb_t m_dev_info;
 
+/*
+* format Bluetooth Device Address into string
+* returns pointer to string
+*/
 char *bda2str(esp_bd_addr_t bda, char *str, size_t size);
 
+/*
+* format UUID to string
+*/
 char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size);
 
+/* 
+* get string name from Extended Inquiry Response data
+*/
 bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len);
 
+/*
+* update detection information to most recent detection data
+*/
 void update_device_info(esp_bt_gap_cb_param_t *param);
 
+/*
+* setup bluetooth application
+*/
 void bt_app_gap_init(void);
 
+/*
+* callback on bluetooth app state change
+*/
 void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
 
+/*
+* start bluetooth application
+*/
 void bt_app_gap_start_up(void);
 
 #endif
