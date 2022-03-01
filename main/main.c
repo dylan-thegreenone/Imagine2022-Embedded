@@ -64,13 +64,12 @@ void app_main(void)
 
     time_t now = 0;
 
-    // time will only be accurate if SNTP sync was successful (requires wifi)
+    // time will only be accurate if SNTP sync was successful (requires wifi for now)
     time(&now);
 
     ESP_LOGI(TIME_TAG, "now : %d", (int)now);
 
     bt_app_gap_start_up();
-    ESP_LOGI("LIGMA", "Done!");
     ESP_LOGI("LIGMA", "Done!");
 }
 

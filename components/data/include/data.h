@@ -18,7 +18,7 @@ typedef struct {
 /*
 * returns the length minimum length of a string that can hold the data formatted to send
 */
-int calc_len(csha_bt_packet* frame);
+int calc_len(time_t timestamp, csha_bt_packet* frame);
 
 /*
 * formats detection data and stores it in str

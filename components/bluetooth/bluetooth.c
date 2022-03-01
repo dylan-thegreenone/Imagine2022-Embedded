@@ -131,20 +131,20 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
     
     //copy bda string to bt packet
-    //btpacket.mac = bda_str;
     sprintf(btpacket.mac, "%s", bda_str);
     sprintf(btpacket.name, "%s",  p_dev->bdname);
     btpacket.rssi = rssi;
     time_t now;
 
-    int data_str_len = calc_len(&btpacket);
+    time(&now);
+    int data_str_len = calc_len(now, &btpacket);
     char data_str[data_str_len];
 
 
     if (wifi_connected())
     {
-        time(&now);
         format_data(data_str, now, identifier_mac, &btpacket);
+        ESP_LOGI(WIFI_TAG, "%d : %s", data_str_len, data_str);
         udp_send_str(data_str, MAX_SAFE_UDP_BLOCK_SIZE);
     }
 }
@@ -172,13 +172,6 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
         case ESP_BT_GAP_DISC_STATE_CHANGED_EVT: {
             if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STOPPED) {
                 ESP_LOGI(CSHA_TAG, "Device discovery stopped.");
-                //if ( (p_dev->state == APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE ||
-                //        p_dev->state == APP_GAP_STATE_DEVICE_DISCOVERING)
-                //        && p_dev->dev_found) {
-                //    p_dev->state = APP_GAP_STATE_SERVICE_DISCOVERING;
-                //    ESP_LOGI(CSHA_TAG, "Discover services ...");
-                //    esp_bt_gap_get_remote_services(p_dev->bda);
-                //}
             } else if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STARTED) {
                 ESP_LOGI(CSHA_TAG, "Discovery started.");
             }
@@ -193,7 +186,6 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
                     for (int i = 0; i < param->rmt_srvcs.num_uuids; i++) {
                         esp_bt_uuid_t *u = param->rmt_srvcs.uuid_list + i;
                         ESP_LOGI(CSHA_TAG, "--%s", uuid2str(u, uuid_str, 37));
-                        // ESP_LOGI(CSHA_TAG, "--%d", u->len);
                     }
                 } else {
                     ESP_LOGI(CSHA_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
