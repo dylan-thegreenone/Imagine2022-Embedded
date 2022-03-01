@@ -147,7 +147,6 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
         format_data(data_str, now, identifier_mac, &btpacket);
         udp_send_str(data_str, MAX_SAFE_UDP_BLOCK_SIZE);
     }
-
 }
 
 void bt_app_gap_init(void)
