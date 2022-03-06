@@ -8,6 +8,7 @@
 #define DESTINATION_PORT port_number_here
 
 // to disable wifi connection, comment out defining a password
+// without wifi, node will need to connect to BLE mesh.
 #define WIFI_SSID "ssid_here"
 #define WIFI_PASS "password_here"
 

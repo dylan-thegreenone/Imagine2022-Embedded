@@ -1,6 +1,6 @@
-# CSH Analytics—Embedded Team
+# CSHacked—Embedded Team
 
-This repo contains all source code and information pertaining to the configuration and operation of the embedded portion of CSH Analytics. It's basically nothing right now. It just scans the bluetooth airwaves and lists them onscreen. That somehow needs to be put into a database...
+This repo contains all source code and information pertaining to the configuration and operation of the embedded portion of CSHacked. It's basically nothing right now. It just scans the bluetooth airwaves and lists them onscreen. That somehow needs to be put into a database...
 
 Below, you'll find some (slightly modified) documentation from the repo this project was pulled from.
 

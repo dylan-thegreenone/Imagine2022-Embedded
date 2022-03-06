@@ -74,7 +74,7 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     int32_t rssi = -129; /* invalid value */
     esp_bt_gap_dev_prop_t *p;
 
-    ESP_LOGI(CSHA_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
+    // ESP_LOGI(CSHA_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
     for (int i = 0; i < param->disc_res.num_prop; i++) {
         p = param->disc_res.prop + i;
         switch (p->type) {
@@ -128,7 +128,6 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
 
     csha_bt_packet btpacket;
 
-    ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
     
     //copy bda string to bt packet
     sprintf(btpacket.mac, "%s", bda_str);
@@ -137,6 +136,9 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     time_t now;
 
     time(&now);
+
+    ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d, TIMESTAMP %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi, wifi_connected() ? (int) now : -1);
+
     int data_str_len = calc_len(now, &btpacket);
     char data_str[data_str_len];
 
