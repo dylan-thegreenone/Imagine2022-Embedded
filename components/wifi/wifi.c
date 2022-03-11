@@ -81,11 +81,12 @@ char* byte_mac_to_str(char* str, uint8_t* mac)
     return str;
 }
 
-char* get_wifi_mac_str(char* str)
+void get_wifi_mac_str(char* str)
 {
     uint8_t mac[6];
     esp_efuse_mac_get_default(mac);
-    return byte_mac_to_str(str, mac);
+    //return byte_mac_to_str(str, mac);
+    return;
 }
 
 bool wifi_connected(void)

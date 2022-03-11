@@ -55,7 +55,7 @@ char* byte_mac_to_str(char* str, uint8_t* mac);
 * formatted as 00:00:00:00:00:00
 * returns pointer to str
 */
-char* get_wifi_mac_str(char* str);
+void get_wifi_mac_str(char* str);
 
 /*
 * returns whether wifi is currently connected

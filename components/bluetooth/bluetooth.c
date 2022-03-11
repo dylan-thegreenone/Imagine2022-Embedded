@@ -207,21 +207,22 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 void bt_app_gap_start_up(void)
 {
     get_wifi_mac_str(identifier_mac);
+	char *dev_name = "ESP_GAP_INQUIRY";
+	esp_bt_dev_set_device_name(dev_name);
+	
+	/* register GAP callback function */
+	esp_bt_gap_register_callback(bt_app_gap_cb);
+	/* set discoverable and connectable mode, wait to be connected */
+	esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+	
+	/* inititialize device information and status */
+	bt_app_gap_init();
+	    
     while (true) {
-	    char *dev_name = "ESP_GAP_INQRUIY";
-	    esp_bt_dev_set_device_name(dev_name);
-	    
-	    /* register GAP callback function */
-	    esp_bt_gap_register_callback(bt_app_gap_cb);
-	    
-	    /* set discoverable and connectable mode, wait to be connected */
-	    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-	    
-	    /* inititialize device information and status */
-	    bt_app_gap_init();
-	    
 	    ESP_LOGI(CSHA_TAG, "Begin inquiry");
-	    esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+	    // esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+	    esp_err_t discovery_result = esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+        ESP_LOGI(CSHA_TAG, "discovery result = %d", discovery_result);
 	    vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
 }
