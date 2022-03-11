@@ -7,7 +7,9 @@
 #include "esp_log.h"
 
 #include "bluetooth.h"
+#include "udp.h"
 #include "wifi.h"
+#include "config.h"
 
 void app_main(void)
 {
@@ -19,8 +21,15 @@ void app_main(void)
     }
     ESP_ERROR_CHECK( ret );
 
-    start_wifi();
-
+    // comment out password define in config file to disable wifi connection attempt
+    #ifdef WIFI_PASS
+        char* wifi_ssid = WIFI_SSID;
+        char* wifi_pass = WIFI_PASS;
+        start_wifi(wifi_ssid, wifi_pass);
+        init_udp_socket(DESTINATION_ADDRESS, DESTINATION_PORT);
+        sntp_update_time();
+    #endif
+    
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
@@ -29,22 +38,39 @@ void app_main(void)
         return;
     }
 
-    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) {
+    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) 
+    {
         ESP_LOGE(CSHA_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 
-    if ((ret = esp_bluedroid_init()) != ESP_OK) {
+    if ((ret = esp_bluedroid_init()) != ESP_OK) 
+    {
         ESP_LOGE(CSHA_TAG, "%s initialize bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 
-    if ((ret = esp_bluedroid_enable()) != ESP_OK) {
+    if ((ret = esp_bluedroid_enable()) != ESP_OK) 
+    {
         ESP_LOGE(CSHA_TAG, "%s enable bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
+    if (!socket_ready())
+    {
+	    ESP_LOGE(CSHA_TAG, "Could not start UDP socket");
+    }
+
+    get_wifi_mac_str(wifi_mac_str);
+    ESP_LOGI(WIFI_TAG," mac: %s",  wifi_mac_str);
+
+    time_t now = 0;
+
+    // time will only be accurate if SNTP sync was successful (requires wifi for now)
+    time(&now);
+
+    ESP_LOGI(TIME_TAG, "now : %d", (int)now);
 
     bt_app_gap_start_up();
     ESP_LOGI("LIGMA", "Done!");
-    ESP_LOGI("LIGMA", "Done!");
 }
+

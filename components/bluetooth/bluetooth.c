@@ -1,5 +1,7 @@
 #include "bluetooth.h"
 
+static char identifier_mac[17];
+
 char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
 {
     if (bda == NULL || str == NULL || size < 18) {
@@ -17,7 +19,6 @@ char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size)
     if (uuid == NULL || str == NULL) {
         return NULL;
     }
-
     if (uuid->len == 2 && size >= 5) {
         sprintf(str, "%04x", uuid->uuid.uuid16);
     } else if (uuid->len == 4 && size >= 9) {
@@ -73,7 +74,7 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     int32_t rssi = -129; /* invalid value */
     esp_bt_gap_dev_prop_t *p;
 
-    ESP_LOGI(CSHA_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
+    // ESP_LOGI(CSHA_TAG, "Device found: %s", bda2str(param->disc_res.bda, bda_str, 18)); // You can see these even when the device isn't visible
     for (int i = 0; i < param->disc_res.num_prop; i++) {
         p = param->disc_res.prop + i;
         switch (p->type) {
@@ -93,17 +94,8 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
 
     /* search for device with MAJOR service class as "rendering" in COD */
     app_gap_cb_t *p_dev = &m_dev_info;
-    //if (p_dev->dev_found && 0 != memcmp(param->disc_res.bda, p_dev->bda, ESP_BD_ADDR_LEN)) {
-    //    return;
-    //}
-
-    //if (!esp_bt_gap_is_valid_cod(cod) ||
-	//    (!(esp_bt_gap_get_cod_major_dev(cod) == ESP_BT_COD_MAJOR_DEV_PHONE) &&
-    //         !(esp_bt_gap_get_cod_major_dev(cod) == ESP_BT_COD_MAJOR_DEV_AV))) {
-    //    return;
-    //}
-
     memcpy(p_dev->bda, param->disc_res.bda, ESP_BD_ADDR_LEN);
+
     p_dev->dev_found = true;
     for (int i = 0; i < param->disc_res.num_prop; i++) {
         p = param->disc_res.prop + i;
@@ -132,15 +124,31 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
         }
     }
 
-    //if (p_dev->eir && p_dev->bdname_len == 0) {
-        get_name_from_eir(p_dev->eir, p_dev->bdname, &p_dev->bdname_len);
-        ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi);
+    get_name_from_eir(p_dev->eir, p_dev->bdname, &p_dev->bdname_len); 
 
-        //p_dev->state = APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE;
-        // We never wanna stop
-//        ESP_LOGI(CSHA_TAG, "Cancel device discovery ...");
-//       esp_bt_gap_cancel_discovery();
-    //}
+    csha_bt_packet btpacket;
+
+    
+    //copy bda string to bt packet
+    sprintf(btpacket.mac, "%s", bda_str);
+    sprintf(btpacket.name, "%s",  p_dev->bdname);
+    btpacket.rssi = rssi;
+    time_t now;
+
+    time(&now);
+
+    ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d, TIMESTAMP %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi, wifi_connected() ? (int) now : -1);
+
+    int data_str_len = calc_len(now, &btpacket);
+    char data_str[data_str_len];
+
+
+    if (wifi_connected())
+    {
+        format_data(data_str, now, identifier_mac, &btpacket);
+        ESP_LOGI(WIFI_TAG, "%d : %s", data_str_len, data_str);
+        udp_send_str(data_str, MAX_SAFE_UDP_BLOCK_SIZE);
+    }
 }
 
 void bt_app_gap_init(void)
@@ -159,69 +167,62 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
     char uuid_str[37];
 
     switch (event) {
-    case ESP_BT_GAP_DISC_RES_EVT: {
-        update_device_info(param);
-        break;
-    }
-    case ESP_BT_GAP_DISC_STATE_CHANGED_EVT: {
-        if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STOPPED) {
-            ESP_LOGI(CSHA_TAG, "Device discovery stopped.");
-            //if ( (p_dev->state == APP_GAP_STATE_DEVICE_DISCOVER_COMPLETE ||
-            //        p_dev->state == APP_GAP_STATE_DEVICE_DISCOVERING)
-            //        && p_dev->dev_found) {
-            //    p_dev->state = APP_GAP_STATE_SERVICE_DISCOVERING;
-            //    ESP_LOGI(CSHA_TAG, "Discover services ...");
-            //    esp_bt_gap_get_remote_services(p_dev->bda);
-            //}
-        } else if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STARTED) {
-            ESP_LOGI(CSHA_TAG, "Discovery started.");
+        case ESP_BT_GAP_DISC_RES_EVT: {
+            update_device_info(param);
+            break;
         }
-        break;
-    }
-    case ESP_BT_GAP_RMT_SRVCS_EVT: {
-        if (memcmp(param->rmt_srvcs.bda, p_dev->bda, ESP_BD_ADDR_LEN) == 0 &&
-                p_dev->state == APP_GAP_STATE_SERVICE_DISCOVERING) {
-            p_dev->state = APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE;
-            if (param->rmt_srvcs.stat == ESP_BT_STATUS_SUCCESS) {
-                ESP_LOGI(CSHA_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
-                for (int i = 0; i < param->rmt_srvcs.num_uuids; i++) {
-                    esp_bt_uuid_t *u = param->rmt_srvcs.uuid_list + i;
-                    ESP_LOGI(CSHA_TAG, "--%s", uuid2str(u, uuid_str, 37));
-                    // ESP_LOGI(CSHA_TAG, "--%d", u->len);
-                }
-            } else {
-                ESP_LOGI(CSHA_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
+        case ESP_BT_GAP_DISC_STATE_CHANGED_EVT: {
+            if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STOPPED) {
+                ESP_LOGI(CSHA_TAG, "Device discovery stopped.");
+            } else if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STARTED) {
+                ESP_LOGI(CSHA_TAG, "Discovery started.");
             }
+            break;
         }
-        break;
-    }
-    case ESP_BT_GAP_RMT_SRVC_REC_EVT:
-    default: {
-        ESP_LOGI(CSHA_TAG, "event: %d", event);
-        break;
-    }
+        case ESP_BT_GAP_RMT_SRVCS_EVT: {
+            if (memcmp(param->rmt_srvcs.bda, p_dev->bda, ESP_BD_ADDR_LEN) == 0 &&
+                    p_dev->state == APP_GAP_STATE_SERVICE_DISCOVERING) {
+                p_dev->state = APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE;
+                if (param->rmt_srvcs.stat == ESP_BT_STATUS_SUCCESS) {
+                    ESP_LOGI(CSHA_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
+                    for (int i = 0; i < param->rmt_srvcs.num_uuids; i++) {
+                        esp_bt_uuid_t *u = param->rmt_srvcs.uuid_list + i;
+                        ESP_LOGI(CSHA_TAG, "--%s", uuid2str(u, uuid_str, 37));
+                    }
+                } else {
+                    ESP_LOGI(CSHA_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
+                }
+            }
+            break;
+        }
+        case ESP_BT_GAP_RMT_SRVC_REC_EVT:
+        default: {
+            ESP_LOGI(CSHA_TAG, "event: %d", event);
+            break;
+        }
     }
     return;
 }
 
 void bt_app_gap_start_up(void)
 {
+    get_wifi_mac_str(identifier_mac);
+	char *dev_name = "ESP_GAP_INQUIRY";
+	esp_bt_dev_set_device_name(dev_name);
+	
+	/* register GAP callback function */
+	esp_bt_gap_register_callback(bt_app_gap_cb);
+	/* set discoverable and connectable mode, wait to be connected */
+	esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+	
+	/* inititialize device information and status */
+	bt_app_gap_init();
+	    
     while (true) {
-    char *dev_name = "ESP_GAP_INQRUIY";
-    esp_bt_dev_set_device_name(dev_name);
-
-    /* register GAP callback function */
-    esp_bt_gap_register_callback(bt_app_gap_cb);
-
-    /* set discoverable and connectable mode, wait to be connected */
-    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-
-    /* inititialize device information and status */
-    bt_app_gap_init();
-
-    ESP_LOGI(CSHA_TAG, "Begin inquiry");
-        esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
-    vTaskDelay(15000 / portTICK_PERIOD_MS);
+	    ESP_LOGI(CSHA_TAG, "Begin inquiry");
+	    // esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+	    esp_err_t discovery_result = esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+        ESP_LOGI(CSHA_TAG, "discovery result = %d", discovery_result);
+	    vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
 }
-
