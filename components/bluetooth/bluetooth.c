@@ -3,6 +3,14 @@
 extern char wifi_mac_str[18];
 extern bool wifi_ready;
 extern bool sntp_ready;
+static esp_ble_scan_params_t ble_scan_params = {
+    .scan_type              = BLE_SCAN_TYPE_ACTIVE,
+    .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
+    .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
+    .scan_interval          = 0x30, // 0x320 * 0.625ms = 500ms  
+    .scan_window            = 0x20,
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
+};
 
 char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
 {
@@ -95,7 +103,7 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
     }
 
     /* search for device with MAJOR service class as "rendering" in COD */
-    app_gap_cb_t *p_dev = &m_dev_info;
+    bt_app_gap_cb_t *p_dev = &bt_m_dev_info;
     memcpy(p_dev->bda, param->disc_res.bda, ESP_BD_ADDR_LEN);
 
     p_dev->dev_found = true;
@@ -139,7 +147,7 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
 
     time(&now);
 
-    ESP_LOGI(CSHA_TAG, "Found a target device, address %s, name %s, RSSI %d, TIMESTAMP %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi, wifi_ready ? (int) now : -1);
+    ESP_LOGI(BT_TAG, "Found a target device, address %s, name %s, RSSI %d, TIMESTAMP %d", bda2str(param->disc_res.bda, bda_str, 18), p_dev->bdname, rssi, wifi_ready ? (int) now : -1);
 
     int data_str_len = calc_len(now, &btpacket);
     char data_str[data_str_len];
@@ -154,8 +162,8 @@ void update_device_info(esp_bt_gap_cb_param_t *param)
 
 void bt_app_gap_init(void)
 {
-    app_gap_cb_t *p_dev = &m_dev_info;
-    memset(p_dev, 0, sizeof(app_gap_cb_t));
+    bt_app_gap_cb_t *p_dev = &bt_m_dev_info;
+    memset(p_dev, 0, sizeof(bt_app_gap_cb_t));
 
     /* start to discover nearby Bluetooth devices */
     p_dev->state = APP_GAP_STATE_DEVICE_DISCOVERING;
@@ -163,7 +171,7 @@ void bt_app_gap_init(void)
 
 void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 {
-    app_gap_cb_t *p_dev = &m_dev_info;
+    bt_app_gap_cb_t *p_dev = &bt_m_dev_info;
     char bda_str[18];
     char uuid_str[37];
 
@@ -174,9 +182,9 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
         }
         case ESP_BT_GAP_DISC_STATE_CHANGED_EVT: {
             if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STOPPED) {
-                ESP_LOGI(CSHA_TAG, "Device discovery stopped.");
+                ESP_LOGI(BT_TAG, "Device discovery stopped.");
             } else if (param->disc_st_chg.state == ESP_BT_GAP_DISCOVERY_STARTED) {
-                ESP_LOGI(CSHA_TAG, "Discovery started.");
+                ESP_LOGI(BT_TAG, "Discovery started.");
             }
             break;
         }
@@ -185,26 +193,25 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
                     p_dev->state == APP_GAP_STATE_SERVICE_DISCOVERING) {
                 p_dev->state = APP_GAP_STATE_SERVICE_DISCOVER_COMPLETE;
                 if (param->rmt_srvcs.stat == ESP_BT_STATUS_SUCCESS) {
-                    ESP_LOGI(CSHA_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
+                    ESP_LOGI(BT_TAG, "Services for device %s found",  bda2str(p_dev->bda, bda_str, 18));
                     for (int i = 0; i < param->rmt_srvcs.num_uuids; i++) {
                         esp_bt_uuid_t *u = param->rmt_srvcs.uuid_list + i;
-                        ESP_LOGI(CSHA_TAG, "--%s", uuid2str(u, uuid_str, 37));
+                        ESP_LOGI(BT_TAG, "--%s", uuid2str(u, uuid_str, 37));
                     }
                 } else {
-                    ESP_LOGI(CSHA_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
+                    ESP_LOGI(BT_TAG, "Services for device %s not found",  bda2str(p_dev->bda, bda_str, 18));
                 }
             }
             break;
         }
         case ESP_BT_GAP_RMT_SRVC_REC_EVT:
         default: {
-            ESP_LOGI(CSHA_TAG, "event: %d", event);
+            ESP_LOGI(BT_TAG, "event: %d", event);
             break;
         }
     }
     return;
 }
-
 void bt_app_gap_start_up(void)
 {
     //get_wifi_mac_str();
@@ -218,12 +225,80 @@ void bt_app_gap_start_up(void)
 	
 	/* inititialize device information and status */
 	bt_app_gap_init();
+    
 	    
     while (true) {
-	    ESP_LOGI(CSHA_TAG, "Begin inquiry");
-	    // esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+	    ESP_LOGI(BT_TAG, "Begin inquiry");
 	    esp_err_t discovery_result = esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
-        ESP_LOGI(CSHA_TAG, "discovery result = %d", discovery_result);
+        ESP_LOGI(BT_TAG, "discovery result = %d", discovery_result);
 	    vTaskDelay(15000 / portTICK_PERIOD_MS);
+    }
+}
+
+void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
+{
+    esp_err_t err;
+    switch (event)
+    {
+        case ESP_GAP_BLE_SCAN_TIMEOUT_EVT:
+        case ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT:
+            esp_ble_gap_start_scanning(0);
+            break;
+        case ESP_GAP_BLE_SCAN_START_COMPLETE_EVT: 
+            if((err = param->scan_start_cmpl.status) != ESP_BT_STATUS_SUCCESS) 
+            {
+                ESP_LOGE(BLE_TAG,"Scan start failed: %s", esp_err_to_name(err));
+            }
+            else 
+            {
+                ESP_LOGI(BLE_TAG,"Start scanning...");
+            }
+            break;
+        case ESP_GAP_BLE_SCAN_RESULT_EVT:
+            ble_scan_dev_info = (ble_app_scan_result_t*) param;
+            // memcpy(ble_scan_dev_info, param, sizeof(*param));
+            // ESP_LOGI(BLE_TAG, "Search event: %d", ble_scan_dev_info->search_evt);
+            switch(ble_scan_dev_info->ble_evt_type)
+            {
+            case ESP_BLE_EVT_NON_CONN_ADV:
+            case ESP_BLE_EVT_SCAN_RSP:
+            case ESP_BLE_EVT_CONN_ADV:
+            case ESP_BLE_EVT_CONN_DIR_ADV:
+            case ESP_BLE_EVT_DISC_ADV:
+                ESP_LOGI(BLE_TAG, "BDA : %02x:%02x:%02x:%02x:%02x:%02x RSSI: %d",
+                    ble_scan_dev_info->bda[0],
+                    ble_scan_dev_info->bda[1],
+                    ble_scan_dev_info->bda[2],
+                    ble_scan_dev_info->bda[3],
+                    ble_scan_dev_info->bda[4],
+                    ble_scan_dev_info->bda[5],
+                    ble_scan_dev_info->rssi
+                    );
+                break;
+            default:
+                break;
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            break;
+        default:
+            ESP_LOGI(BLE_TAG, "Event: %d", event);
+    }
+}
+void ble_app_gap_start_up(void)
+{
+    esp_err_t err;
+    get_wifi_mac_str(wifi_mac_str);
+	char *dev_name = "ESP_GAP_INQUIRY";
+	esp_bt_dev_set_device_name(dev_name);
+	
+    esp_ble_gap_set_scan_params(&ble_scan_params);
+    
+    if ((err = esp_ble_gap_register_callback(ble_app_gap_cb)) != ESP_OK)
+    {
+        ESP_LOGE(BLE_TAG, "Gap callback register error");
+    }
+    for (;;) 
+    {
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

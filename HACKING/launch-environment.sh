@@ -1,6 +1,5 @@
 #!/bin/bash
 IMAGINE_DIR=/home/$USER/Code/ImagineRIT2022
-
 mkdir -p "$IMAGINE_DIR"
 podman run --rm -it                             \
     --name=imaginerit-embedded-dev              \
@@ -8,9 +7,10 @@ podman run --rm -it                             \
     --device=/dev/ttyUSB0:rwm                   \
     --group-add keep-groups                     \
     --annotation io.crun.keep_original_groups=1 \
+    --annotation run.oci.keep_original_groups=1 \
+    --security-opt label=disable \
     imaginerit-embedded-dev
 
 # To open a shell, run: podman exec -it imaginerit-embedded-dev bash
-
 # To add device, insert a device mapping:
 #    --device=/dev/ttyUSB0    \

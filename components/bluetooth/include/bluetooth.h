@@ -9,16 +9,20 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "esp_err.h"
 #include "esp_bt.h"
+#include "esp_bt_defs.h"
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
 #include "esp_gap_bt_api.h"
-
+#include "esp_gap_ble_api.h"
 #include "data.h"
 #include "udp.h"
 #include "network.h"
 
-#define CSHA_TAG "CSHA Bluetooth"
+#define BT_TAG "CSHA Bluetooth"
+#define BLE_TAG "CSHA BLE"
+
 
 /*
 * possible BLE app states or states 
@@ -32,7 +36,7 @@ typedef enum {
 } app_gap_state_t;
 
 /*
-* all event information passed to BLE app callback 
+* all event information passed to BT app callback 
 */
 typedef struct {
     bool dev_found;
@@ -44,9 +48,28 @@ typedef struct {
     uint8_t bdname[ESP_BT_GAP_MAX_BDNAME_LEN + 1];
     esp_bd_addr_t bda;
     app_gap_state_t state;
-} app_gap_cb_t;
+} bt_app_gap_cb_t;
 
-app_gap_cb_t m_dev_info;
+bt_app_gap_cb_t bt_m_dev_info;
+
+/*
+* all event information passed to BLE app callback
+*/
+typedef struct {
+    esp_gap_search_evt_t search_evt;
+    esp_bd_addr_t bda;
+    esp_bt_dev_type_t dev_type;
+    esp_ble_addr_type_t ble_addr_type;
+    esp_ble_evt_type_t ble_evt_type;
+    int rssi;
+    uint8_t ble_adv[ESP_BLE_ADV_DATA_LEN_MAX + ESP_BLE_SCAN_RSP_DATA_LEN_MAX];
+    int flag;
+    int num_resps;
+    uint8_t adv_data_len;
+    uint8_t scan_rsp_len;
+    uint32_t num_dis;
+} ble_app_scan_result_t;
+ble_app_scan_result_t* ble_scan_dev_info;
 
 /*
 * format Bluetooth Device Address into string
@@ -84,4 +107,13 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
 */
 void bt_app_gap_start_up(void);
 
+/*
+* callback on BLE app state change
+*/
+void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
+
+/*
+* start BLE application
+*/
+void ble_app_gap_start_up(void);
 #endif

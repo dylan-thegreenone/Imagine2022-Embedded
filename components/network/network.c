@@ -15,7 +15,7 @@ char* get_wifi_mac_str()
 
 void time_sync_notification_cb(struct timeval* tv)
 {
-    //Nothing yet you fool
+    sntp_ready = true;
 }
 
 void init_sntp(void)
@@ -24,7 +24,6 @@ void init_sntp(void)
     sntp_setservername(0, NTP_SERVER);
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
     sntp_init();
-    sntp_ready = true;
 }
 
 bool sntp_update_time(void)

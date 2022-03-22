@@ -1,3 +1,7 @@
+// ┌┬┐┬ ┬┌─┐┌─┐┬─┐┌─┐┌─┐┌┐┌┌─┐┌┐┌┌─┐
+//  │ ├─┤├┤ │ ┬├┬┘├┤ ├┤ ││││ ││││├┤ 
+//  ┴ ┴ ┴└─┘└─┘┴└─└─┘└─┘┘└┘└─┘┘└┘└─┘
+
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -26,30 +30,28 @@ void app_main(void)
     }
     ESP_ERROR_CHECK( ret );
 
-    ESP_LOGI(CSHA_TAG, "Setting BLE mode...");
-    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
-        ESP_LOGE(CSHA_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(ret));
+        ESP_LOGE(BT_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 
-    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) 
+    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_BLE)) != ESP_OK) 
     {
-        ESP_LOGE(CSHA_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
+        ESP_LOGE(BLE_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 
     if ((ret = esp_bluedroid_init()) != ESP_OK) 
     {
-        ESP_LOGE(CSHA_TAG, "%s initialize bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
+        ESP_LOGE(BT_TAG, "%s initialize bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 
     if ((ret = esp_bluedroid_enable()) != ESP_OK) 
     {
-        ESP_LOGE(CSHA_TAG, "%s enable bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
+        ESP_LOGE(BT_TAG, "%s enable bluedroid failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 
@@ -59,7 +61,7 @@ void app_main(void)
 
     if (!socket_ready())
 	    ESP_LOGE(CSHA_TAG, "Could not start UDP socket");
-
+    
     get_wifi_mac_str();
     ESP_LOGI(WIFI_TAG,"ESP MAC Address: %s",  wifi_mac_str);
 
@@ -69,7 +71,7 @@ void app_main(void)
 
     ESP_LOGI(TIME_TAG, "now : %d", (int)now);
 
-    bt_app_gap_start_up();
-    ESP_LOGI(CSHA_TAG, "Ready.");
+    ble_app_gap_start_up();
+    ESP_LOGI("CSHacked", "Done!");
 }
 
