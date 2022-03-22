@@ -1,7 +1,9 @@
 #include "wifi.h"
 #include <stdint.h>
 
-
+static const uint8_t blank_mac[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
 static wifi_config_t wps_ap_creds[MAX_WPS_AP_CRED];
 static int s_ap_creds_num = 0;
 static int s_retry_num = 0;
@@ -84,7 +86,9 @@ char* byte_mac_to_str(char* str, uint8_t* mac)
 void get_wifi_mac_str(char* str)
 {
     uint8_t mac[6];
-    esp_efuse_mac_get_default(mac);
+    esp_efuse_mac_get_custom(mac);
+
+    if (memcmp(blank_mac, mac, 6) == 0) esp_efuse_mac_get_default(mac);
     byte_mac_to_str(str, mac);
     return;
 }
