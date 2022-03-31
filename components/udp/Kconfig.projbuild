@@ -1,0 +1,13 @@
+menu "CSHA UDP Config"
+    config UDP_DEST_ADDRESS
+        string "Ingestion Server Address"
+        default "69.69.69.69"
+        help
+            The destination to ship bluetooth metrics to
+
+    config UDP_DEST_PORT
+        int "Ingestion Server Port"
+        default 6666
+        help
+            The destination port to ship bluetooth metrics to
+endmenu

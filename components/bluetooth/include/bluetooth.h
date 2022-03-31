@@ -5,19 +5,18 @@
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-//#include "nvs.h"
-//#include "nvs_flash.h"
-//#include "esp_system.h"
 #include "esp_log.h"
 #include "esp_bt.h"
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
 #include "esp_gap_bt_api.h"
+
 #include "data.h"
 #include "udp.h"
-#include "wifi.h"
+#include "network.h"
 
 #define CSHA_TAG "CSHA Bluetooth"
 
