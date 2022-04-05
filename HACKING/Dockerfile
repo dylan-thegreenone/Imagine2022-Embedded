@@ -9,3 +9,4 @@ RUN git clone --recursive https://github.com/espressif/esp-idf.git -b v4.3.2
 WORKDIR esp-idf
 RUN ./install.sh esp32
 RUN echo '. /root/esp/esp-idf/export.sh' >> /root/.bashrc
+RUN echo 'cd /ImagineRIT2022' >> /root/.bashrc

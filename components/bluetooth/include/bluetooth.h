@@ -14,11 +14,10 @@
 #include "esp_bt_defs.h"
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
-#include "esp_gap_bt_api.h"
-#include "esp_gap_ble_api.h"
 #include "data.h"
 #include "udp.h"
 #include "network.h"
+#include "esp_gap_bt_api.h"
 
 
 #define BT_TAG "CSHA Bluetooth"
@@ -91,13 +90,14 @@ char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size);
 * get string name from Extended Inquiry Response data
 */
 bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len);
+
+#ifdef CONFIG_BT_BLE_ENABLED 
+#include "esp_gap_ble_api.h"
+
 /*
 * callback on BLE app state change
 */
 void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-
-#ifdef CONFIG_BT_BLE_ENABLED 
-
 /*
 * start BLE application with specified random address
 */

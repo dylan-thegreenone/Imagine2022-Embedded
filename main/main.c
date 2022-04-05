@@ -32,6 +32,8 @@ void app_main(void)
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
 
+    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
+
     if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
         ESP_LOGE(BT_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
@@ -60,7 +62,7 @@ void app_main(void)
     sntp_update_time(); // Wait. How the fuck is this functioning?
 
     if (!socket_ready())
-	    ESP_LOGE(CSHA_TAG, "Could not start UDP socket");
+	    ESP_LOGE(WIFI_TAG, "Could not start UDP socket");
     
     get_wifi_mac_str();
     ESP_LOGI(WIFI_TAG,"ESP MAC Address: %s",  wifi_mac_str);
