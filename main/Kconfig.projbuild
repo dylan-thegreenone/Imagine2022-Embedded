@@ -1,0 +1,8 @@
+menu "Main"
+    config DEVICE_NUM
+        hex "device number (last byte of address)"
+        range 0x0 0xff
+        default 0x0
+        
+        
+endmenu

@@ -260,7 +260,7 @@ static esp_ble_scan_params_t ble_scan_params = {
     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL, //BLE_SCAN_FILTER_ALLOW_ONLY_WLST,
     .scan_interval          = 0x30, // 0x320 * 0.625ms = 500ms  
     .scan_window            = 0x20,
-    .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
 };
 
 void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
@@ -305,6 +305,7 @@ void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
                 char bda_str[18];
                 bda2str(param->scan_rst.bda, bda_str, 18);
                 csha_bt_packet btpacket;
+                if (!sntp_ready || !wifi_ready) return;
                 
                 sprintf(btpacket.mac, "%s", bda_str);
                 sprintf(btpacket.name, "%s",  adv_name);

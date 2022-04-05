@@ -1,6 +1,16 @@
-// ┌┬┐┬ ┬┌─┐┌─┐┬─┐┌─┐┌─┐┌┐┌┌─┐┌┐┌┌─┐
-//  │ ├─┤├┤ │ ┬├┬┘├┤ ├┤ ││││ ││││├┤ 
-//  ┴ ┴ ┴└─┘└─┘┴└─└─┘└─┘┘└┘└─┘┘└┘└─┘
+//   __   .__                ____                                                          
+// _/  |_ |  |__    ____    / ___\ _______   ____   ____    ____    ____    ____    ____   
+// \   __\|  |  \ _/ __ \  / /_/  >\_  __ \_/ __ \_/ __ \  /    \  /  _ \  /    \ _/ __ \  
+//  |  |  |   Y  \\  ___/  \___  /  |  | \/\  ___/\  ___/ |   |  \(  <_> )|   |  \\  ___/  
+//  |__|  |___|  / \___  >/_____/   |__|    \___  >\___  >|___|  / \____/ |___|  / \___  > 
+//             \/      \/                       \/     \/      \/              \/      \/  
+//                                                                                         
+//          .__ .__           .__ .__                                                      
+// __  _  __|__||  |    ____  |__||  |                                                     
+// \ \/ \/ /|  ||  |   /    \ |  ||  |                                                     
+//  \     / |  ||  |__|   |  \|  ||  |__                                                   
+//   \/\_/  |__||____/|___|  /|__||____/                                                   
+//                         \/                             
 
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -13,9 +23,11 @@
 #include "bluetooth.h"
 #include "udp.h"
 #include "mesh.h"
-#include "config.h"
 #include "network.h"
 
+const uint8_t custom_mac[] = {
+    0xCA, 0xFE, 0x69, 0xC5, 0x11, CONFIG_DEVICE_NUM
+};
 char wifi_mac_str[18] = {};
 bool wifi_ready = false;
 bool sntp_ready = false;
@@ -64,14 +76,10 @@ void app_main(void)
     if (!socket_ready())
 	    ESP_LOGE(WIFI_TAG, "Could not start UDP socket");
     
+    esp_base_mac_addr_set(custom_mac);
+
     get_wifi_mac_str();
     ESP_LOGI(WIFI_TAG,"ESP MAC Address: %s",  wifi_mac_str);
-
-    // time will only be accurate if SNTP sync was successful (requires mesh for now)
-    time_t now = 0;
-    time(&now);
-
-    ESP_LOGI(TIME_TAG, "now : %d", (int)now);
 
     ble_app_gap_start_up();
     ESP_LOGI("CSHacked", "Done!");
