@@ -20,12 +20,13 @@
 #include "udp.h"
 #include "network.h"
 
+
 #define BT_TAG "CSHA Bluetooth"
 #define BLE_TAG "CSHA BLE"
 
-
+#ifdef CONFIG_BT_CLASSIC_ENABLED 
 /*
-* possible BLE app states or states 
+* possible BT app states or states 
 */
 typedef enum {
     APP_GAP_STATE_IDLE = 0,
@@ -52,23 +53,6 @@ typedef struct {
 
 bt_app_gap_cb_t bt_m_dev_info;
 
-
-/*
-* format Bluetooth Device Address into string
-* returns pointer to string
-*/
-char *bda2str(esp_bd_addr_t bda, char *str, size_t size);
-
-/*
-* format UUID to string
-*/
-char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size);
-
-/* 
-* get string name from Extended Inquiry Response data
-*/
-bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len);
-
 /*
 * update detection information to most recent detection data
 */
@@ -89,13 +73,36 @@ void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
 */
 void bt_app_gap_start_up(void);
 
+#endif
+
+
+/*
+* format Bluetooth Device Address into string
+* returns pointer to string
+*/
+char *bda2str(esp_bd_addr_t bda, char *str, size_t size);
+
+/*
+* format UUID to string
+*/
+char *uuid2str(esp_bt_uuid_t *uuid, char *str, size_t size);
+
+/* 
+* get string name from Extended Inquiry Response data
+*/
+bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len);
 /*
 * callback on BLE app state change
 */
 void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 
+#ifdef CONFIG_BT_BLE_ENABLED 
+
 /*
 * start BLE application with specified random address
 */
-void ble_app_gap_start_up(esp_bd_addr_t rand_addr);
+void ble_app_gap_start_up(void);
+
+#endif
+
 #endif

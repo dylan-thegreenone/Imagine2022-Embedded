@@ -92,6 +92,8 @@ bool get_name_from_eir(uint8_t *eir, uint8_t *bdname, uint8_t *bdname_len)
     return false;
 }
 
+#ifdef CONFIG_BT_CLASSIC_ENABLED
+
 void update_device_info(esp_bt_gap_cb_param_t *param)
 {
     char bda_str[18];
@@ -257,6 +259,17 @@ void bt_app_gap_start_up(void)
 	    vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
 }
+#endif
+
+#ifdef CONFIG_BT_BLE_ENABLED
+static esp_ble_scan_params_t ble_scan_params = {
+    .scan_type              = BLE_SCAN_TYPE_ACTIVE,
+    .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
+    .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL, //BLE_SCAN_FILTER_ALLOW_ONLY_WLST,
+    .scan_interval          = 0x30, // 0x320 * 0.625ms = 500ms  
+    .scan_window            = 0x20,
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
+};
 
 void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
@@ -309,7 +322,7 @@ void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
                 char data_str[data_str_len];
             
                 format_data(data_str, now, identifier_mac, &btpacket);
-                ESP_LOGI(WIFI_TAG, "%d : %s", data_str_len, data_str);
+                ESP_LOGI(BLE_TAG, "%d : %s", data_str_len, data_str);
                 udp_send_str(data_str, MAX_SAFE_UDP_BLOCK_SIZE);
                 // ESP_LOGI(BLE_TAG, "Name: %s BDA : %s RSSI: %d Event: %d",
                 //     adv_name, 
@@ -329,7 +342,7 @@ void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
             break;
     }
 }
-void ble_app_gap_start_up(esp_bd_addr_t rand_addr)
+void ble_app_gap_start_up(void)
 {
     esp_err_t err;
     get_wifi_mac_str(wifi_mac_str);
@@ -338,12 +351,6 @@ void ble_app_gap_start_up(esp_bd_addr_t rand_addr)
 	
     esp_ble_gap_set_scan_params(&ble_scan_params);
     
-    if ((err = esp_ble_gap_set_rand_addr(rand_addr)) != ESP_OK) 
-    {
-        ESP_LOGE(BLE_TAG, "%s Could not set random address %s\n", __func__, esp_err_to_name(err));
-        return;
-    }
-
     if ((err = esp_ble_gap_register_callback(ble_app_gap_cb)) != ESP_OK)
     {
         ESP_LOGE(BLE_TAG, "%s Gap callback register error %s\n", __func__, esp_err_to_name(err));
@@ -354,3 +361,4 @@ void ble_app_gap_start_up(esp_bd_addr_t rand_addr)
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
+#endif
