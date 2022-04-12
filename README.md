@@ -13,7 +13,12 @@ Demo of Classic Bluetooth Device and Service Discovery. Performs inquiry to sear
 
 ## How to use
 
-For more detailed instructions, see HACKING/README.md.
+Add a unique device number with
+```
+idf.py menuconfig
+```
+Navigate to section labeled Main and set a UNIQUE device number
+Flash code onto ESP as outlined in HACKING/README.md
 
 ### Hardware Required
 

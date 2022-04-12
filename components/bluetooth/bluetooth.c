@@ -308,7 +308,7 @@ void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
                 if (!sntp_ready || !wifi_ready) return;
                 
                 sprintf(btpacket.mac, "%s", bda_str);
-                sprintf(btpacket.name, "%s",  adv_name);
+                // sprintf(btpacket.name, "%s",  adv_name);
                 btpacket.rssi = param->scan_rst.rssi;
 
                 int data_str_len = calc_len(now, &btpacket);

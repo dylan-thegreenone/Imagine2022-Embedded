@@ -10,7 +10,6 @@
 * represents detection data of bluetooth device
 */
 typedef struct {
-    char name[100];
     char mac[18];
     int rssi;
 } csha_bt_packet;
