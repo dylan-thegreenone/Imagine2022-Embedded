@@ -3,6 +3,7 @@
 extern char wifi_mac_str[18];
 extern bool wifi_ready;
 extern bool sntp_ready;
+static uint8_t tag_mac_template[6];
 
 char *bda2str(esp_bd_addr_t bda, char *str, size_t size)
 {
@@ -260,7 +261,7 @@ static esp_ble_scan_params_t ble_scan_params = {
     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL, //BLE_SCAN_FILTER_ALLOW_ONLY_WLST,
     .scan_interval          = 0x30, // 0x320 * 0.625ms = 500ms  
     .scan_window            = 0x20,
-    .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
 };
 
 void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
@@ -307,6 +308,7 @@ void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
                 csha_bt_packet btpacket;
                 if (!sntp_ready || !wifi_ready) return;
                 
+
                 sprintf(btpacket.mac, "%s", bda_str);
                 // sprintf(btpacket.name, "%s",  adv_name);
                 btpacket.rssi = param->scan_rst.rssi;
@@ -316,13 +318,18 @@ void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
             
                 format_data(data_str, now, wifi_mac_str, &btpacket);
                 ESP_LOGI(BLE_TAG, "%d : %s", data_str_len, data_str);
+                
+                if (memcmp(tag_mac_template, param->scan_rst.bda, 5) != 0)
+                {
+                    return;
+                }
+                ESP_LOGI(BLE_TAG, "Name: %s BDA : %s RSSI: %d Event: %d",
+                    adv_name, 
+                    bda_str,
+                    param->scan_rst.rssi,
+                    param->scan_rst.ble_evt_type
+                );
                 udp_send_str(data_str, MAX_SAFE_UDP_BLOCK_SIZE);
-                // ESP_LOGI(BLE_TAG, "Name: %s BDA : %s RSSI: %d Event: %d",
-                //     adv_name, 
-                //     bda_str,
-                //     param->scan_rst.rssi,
-                //     param->scan_rst.ble_evt_type
-                //     );
                 break;
             }
             default:
@@ -335,11 +342,13 @@ void ble_app_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
             break;
     }
 }
-void ble_app_gap_start_up(void)
+void ble_app_gap_start_up(esp_bd_addr_t tag_template)
 {
     esp_err_t err;
     get_wifi_mac_str(wifi_mac_str);
 	char *dev_name = "ESP_GAP_INQUIRY";
+
+    memcpy(tag_mac_template, tag_template, 6);
 	esp_bt_dev_set_device_name(dev_name);
 	
     esp_ble_gap_set_scan_params(&ble_scan_params);

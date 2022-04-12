@@ -1,5 +1,4 @@
 /*
-<<<<<<< HEAD
 __   .__                ____                                                          
  _/  |_ |  |__    ____    / ___\ _______   ____   ____    ____    ____    ____    ____   
  \   __\|  |  \ _/ __ \  / /_/  >\_  __ \_/ __ \_/ __ \  /    \  /  _ \  /    \ _/ __ \  
@@ -13,22 +12,6 @@ __   .__                ____
   \     / |  ||  |__|   |  \|  ||  |__                                                   
    \/\_/  |__||____/|___|  /|__||____/                                                   
                          \/                             
-=======
-  __   .__                ____                                                          
-_/  |_ |  |__    ____    / ___\ _______   ____   ____    ____    ____    ____    ____   
-\   __\|  |  \ _/ __ \  / /_/  >\_  __ \_/ __ \_/ __ \  /    \  /  _ \  /    \ _/ __ \ 
- |  |  |   Y  \\  ___/  \___  /  |  | \/\  ___/\  ___/ |   |  \(  <_> )|   |  \\  ___/  
- |__|  |___|  / \___  >/_____/   |__|    \___  >\___  >|___|  / \____/ |___|  / \___  > 
-            \/      \/                       \/     \/      \/              \/      \/  
-                                                                                        
-         .__ .__           .__ .__                                                      
-__  _  __|__||  |    ____  |__||  |                                                     
-\ \/ \/ /|  ||  |   /    \ |  ||  |                                                     
- \     / |  ||  |__|   |  \|  ||  |__                                                   
-  \/\_/  |__||____/|___|  /|__||____/                                                   
-                        \/                             
-
->>>>>>> 2c9585b (Image fits, runs, mesh and scanning work)
 */
 
 #include <stdio.h>
@@ -47,6 +30,9 @@ __  _  __|__||  |    ____  |__||  |
 const uint8_t custom_mac[] = {
     0xCA, 0xFE, 0x69, 0xC5, 0x11, CONFIG_DEVICE_NUM
 };
+const uint8_t tag_mac_template[] = {
+    0xBE, 0xEF, 0x34, 0x25, 0x69, 0x00
+};
 char wifi_mac_str[18] = {};
 bool wifi_ready = false;
 bool sntp_ready = false;
@@ -60,6 +46,12 @@ void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK( ret );
+        
+    if ((ret = esp_base_mac_addr_set(custom_mac))  != ESP_OK)
+    {
+        ESP_LOGE(BLE_TAG, "%s Could not set mac address %s\n", __func__, esp_err_to_name(ret));
+        return;
+    }
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
 
@@ -95,12 +87,10 @@ void app_main(void)
     if (!socket_ready())
 	    ESP_LOGE(WIFI_TAG, "Could not start UDP socket");
     
-    esp_base_mac_addr_set(custom_mac);
-
     get_wifi_mac_str();
     ESP_LOGI(WIFI_TAG,"ESP MAC Address: %s",  wifi_mac_str);
 
-    ble_app_gap_start_up();
+    ble_app_gap_start_up(tag_mac_template);
     ESP_LOGI("CSHacked", "Done!");
 }
 
